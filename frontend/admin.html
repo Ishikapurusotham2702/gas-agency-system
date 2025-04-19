@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="dashboard">
+    <h2>Admin Panel</h2>
+    <button onclick="logout()">Logout</button>
+    
+    <h3>Manage Requests</h3>
+    <div id="requests"></div>
+
+    <h3>Post a Notice</h3>
+    <textarea id="noticeText" placeholder="Enter notice here..."></textarea>
+    <button onclick="postNotice()">Post Notice</button>
+
+    <ul id="bookingsList"></ul>
+  </div>
+  <script src="js/main.js"></script>
+  <script>
+    async function loadAdmin() {
+      const res = await fetch('http://localhost:5000/api/admin/bookings', {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const bookings = await res.json();
+      document.getElementById('bookingsList').innerHTML = bookings.map(b =>
+        `<li>
+          ${b.userId.name} - ${b.paymentMethod} - ${b.decision}
+          <button onclick="setDecision('${b._id}', 'Approved')">Approve</button>
+          <button onclick="setDecision('${b._id}', 'Rejected')">Reject</button>
+        </li>`
+      ).join('');
+    }
+  
+    async function setDecision(bookingId, decision) {
+      const res = await fetch(`http://localhost:5000/api/admin/decision/${bookingId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ decision })
+      });
+      const data = await res.json();
+      alert(data.msg);
+      loadAdmin();
+    }
+  
+    loadAdmin();
+  </script>
+</body>
+</html>

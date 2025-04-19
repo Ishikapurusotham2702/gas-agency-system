@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="dashboard">
+      <h2>Welcome, User</h2>
+      <button onclick="logout()">Logout</button>
+
+      <h3>Book a Gas Cylinder</h3>
+      <button onclick="bookCylinder()">Book Now</button>
+
+      <h3>Payment</h3>
+      <p>Select payment method:</p>
+      <div id="welcome"></div>
+      <button onclick="openQR()">Book Cylinder (Paytm QR)</button>
+<button onclick="bookCylinder('Cash on Delivery')">Book Cylinder (Cash)</button>
+      <ul id="history"></ul>
+
+      <h3>Notices</h3>
+      <div id="notices"></div>
+
+      <a href="booking-history.html">View Booking History</a>
+    </div>
+    <!-- Paytm QR Popup -->
+<div id="qrPopup" style="display:none; position:fixed; top:20%; left:30%; background:white; padding:20px; box-shadow:0 0 10px #000; z-index:10;">
+  <h3>Scan Paytm QR</h3>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/f/f8/Paytm_Logo.jpg" alt="Paytm QR" style="width:200px;">
+  <p>After scanning and paying, click the confirm button.</p>
+  <button onclick="confirmPaytm()">Confirm Payment</button>
+  <button onclick="closeQR()">Cancel</button>
+</div>
+
+    <script src="js/main.js"></script>
+    <script>
+      async function loadDashboard() {
+        const user = await getProfile();
+        document.getElementById(
+          "welcome"
+        ).innerText = `Welcome ${user.name}, Barrels left: ${user.barrelsRemaining}`;
+
+        const history = await getBookings();
+        document.getElementById("history").innerHTML = history
+          .map(
+            (h) =>
+              `<li>${new Date(h.date).toLocaleDateString()} - ${
+                h.paymentMethod
+              } - ${h.status} (${h.decision})</li>`
+          )
+          .join("");
+      }
+      function openQR() {
+    document.getElementById('qrPopup').style.display = 'block';
+  }
+
+  function closeQR() {
+    document.getElementById('qrPopup').style.display = 'none';
+  }
+
+  async function confirmPaytm() {
+    await bookCylinder('Paytm QR');
+    closeQR();
+    loadDashboard();
+  }
+
+      loadDashboard();
+    </script>
+  </body>
+</html>
